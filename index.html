@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>게으름뱅이소_v8.3</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:radial-gradient(circle,#07140d,#000);
+    color:#e8fff3;
+    overflow:hidden;
+    transition:0.5s;
+}
+
+/* 헤더 */
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 20px;
+    background:#06110b;
+    border-bottom:1px solid #24F984;
+}
+
+.logo{
+    font-size:24px;
+    color:#24F984;
+    font-weight:bold;
+    letter-spacing:2px;
+    text-shadow:0 0 10px rgba(36,249,132,0.5);
+}
+
+/* 변수 UI */
+.stats{
+    display:none;
+    padding:10px 18px;
+    border:1px solid #24F984;
+    background:#04100a;
+    font-family:monospace;
+    border-radius:8px;
+    box-shadow:0 0 12px rgba(36,249,132,0.35);
+}
+
+/* 메인 */
+main{
+    display:flex;
+    height:calc(100vh - 70px);
+}
+
+/* 이미지 영역 */
+#image-area{
+    flex:5;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    border-right:2px solid #24F984;
+    background:linear-gradient(180deg,#0a1a12,#010403);
+    overflow:hidden;
+}
+
+#scene-img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    opacity:0.9;
+    transition:0.5s;
+}
+
+/* 게임 영역 */
+#game-area{
+    flex:2;
+    padding:25px;
+    background:#06110b;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+}
+
+/* 씬 제목 */
+.scene-title{
+    color:#24F984;
+    font-size:20px;
+    margin-bottom:10px;
+    border-bottom:1px solid rgba(36,249,132,0.4);
+    padding-bottom:10px;
+    text-shadow:0 0 8px rgba(36,249,132,0.35);
+}
+
+/* 텍스트 + 선택지 비율 */
+#content-wrapper{
+    flex:8;
+    border:1px solid rgba(36,249,132,0.35);
+    border-radius:10px;
+    padding:18px;
+    overflow-y:auto;
+    background:rgba(0,0,0,0.28);
+    scroll-behavior:smooth;
+    box-shadow:0 0 15px rgba(36,249,132,0.08);
+}
+
+/* 스크롤 디자인 */
+#content-wrapper::-webkit-scrollbar{
+    width:8px;
+}
+
+#content-wrapper::-webkit-scrollbar-thumb{
+    background:#24F984;
+    border-radius:10px;
+}
+
+#content-wrapper::-webkit-scrollbar-track{
+    background:#08110d;
+}
+
+/* 텍스트 */
+#text{
+    font-size:17px;
+    line-height:1.8;
+    white-space:pre-line;
+    color:#e8fff3;
+}
+
+/* 선택지 */
+#choices{
+    flex:2;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+}
+
+/* 버튼 */
+.choice{
+    display:block;
+    margin:10px auto;
+    padding:12px;
+    width:95%;
+    border:1px solid;
+    cursor:pointer;
+    transition:0.25s;
+    font-size:15px;
+    border-radius:6px;
+    box-shadow:0 0 10px rgba(0,0,0,0.2);
+}
+
+/* 첫번째 버튼 */
+.choice.primary{
+    background:#0d1f16;
+    border-color:#24F984;
+    color:#24F984;
+}
+
+.choice.primary:hover{
+    background:#24F984;
+    color:#00150a;
+    transform:scale(1.03);
+    box-shadow:0 0 18px rgba(36,249,132,0.55);
+}
+
+/* 두번째 버튼 */
+.choice.secondary{
+    background:#1b1111;
+    border-color:#ff5a5a;
+    color:#ff7b7b;
+}
+
+.choice.secondary:hover{
+    background:#ff5a5a;
+    color:#000;
+    transform:scale(1.03);
+}
+
+/* 다시하기 */
+.restart{
+    margin-top:15px;
+    padding:12px;
+    background:#24F984;
+    border:none;
+    color:#00150a;
+    cursor:pointer;
+    border-radius:6px;
+    font-size:16px;
+    font-weight:bold;
+    transition:0.25s;
+}
+
+.restart:hover{
+    transform:scale(1.03);
+    box-shadow:0 0 20px rgba(36,249,132,0.6);
+}
+
+/* 엔딩 테마 */
+body.bad{
+    background:radial-gradient(circle,#1f0505,#000);
+}
+
+body.normal{
+    background:radial-gradient(circle,#1a1a08,#000);
+}
+
+body.happy{
+    background:radial-gradient(circle,#042414,#000);
+}</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">🐄 게으름뱅이 소</div>
+
+<div class="stats" id="stats">
+    <span id="energy"></span>
+    <span id="sync"></span>
+    <span id="focus"></span>
+</div>
+
+</header>
+
+<main>
+
+<!-- 이미지 -->
+<div id="image-area">
+    <img id="scene-img" src="">
+</div>
+
+<!-- 게임 -->
+<div id="game-area">
+
+<div id="content-wrapper">
+
+<div class="scene-title" id="scene-title"></div>
+
+<div id="text"></div>
+
+</div>
+
+<div id="choices"></div>
+
+</div>
+
+</main>
+
+<script>
+
+let state;
+let currentScene;
+let typingInterval;
+
+/* 초기화 */
+function initGame(){
+
+    state = {
+        energy:50,
+        focus:50,
+        sync:10
+    };
+
+    currentScene = "S1";
+
+    document.body.className = "";
+
+    document.getElementById("stats").style.display="none";
+
+    render();
+}
+
+/* 범위 제한 */
+function clamp(v){
+    return Math.max(0, Math.min(100, v));
+}
+
+/* 상태 색상 */
+function getColor(type, v){
+
+    if(type==="sync"){
+
+        if(v <= 20) return "lime";
+        if(v >= 60) return "red";
+
+        return "white";
+    }
+
+    else{
+
+        if(v >= 80) return "lime";
+        if(v <= 30) return "red";
+
+        return "white";
+    }
+}
+
+/* UI 업데이트 */
+function updateUI(){
+
+    state.energy = clamp(state.energy);
+    state.focus = clamp(state.focus);
+    state.sync = clamp(state.sync);
+
+    document.getElementById("energy").innerHTML =
+        `<span style="color:${getColor('energy',state.energy)}">Energy: ${state.energy}</span>`;
+
+    document.getElementById("sync").innerHTML =
+        `&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:${getColor('sync',state.sync)}">Sync: ${state.sync}</span>`;
+
+    document.getElementById("focus").innerHTML =
+        `&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:${getColor('focus',state.focus)}">Focus: ${state.focus}</span>`;
+}
+
+/* 타이핑 효과 + 자동 스크롤 */
+function typeText(el, text, speed=14){
+
+    clearInterval(typingInterval);
+
+    el.innerHTML = "";
+
+    let i = 0;
+
+    const wrapper = document.getElementById("content-wrapper");
+
+    typingInterval = setInterval(()=>{
+
+        el.innerHTML += text[i];
+
+        /* 자동으로 최신 출력 위치 따라가기 */
+        wrapper.scrollTop = wrapper.scrollHeight;
+
+        i++;
+
+        if(i >= text.length){
+
+            clearInterval(typingInterval);
+
+            wrapper.scrollTop = wrapper.scrollHeight;
+        }
+
+    }, speed);
+}
+
+/* 이미지 설정 */
+function setImage(){
+
+    let img = document.getElementById("scene-img");
+
+    img.src = `S${currentScene.replace(/\D/g,'')}_img.png`;
+
+    img.onerror = function(){
+        img.src = "default_scene.png";
+    }
+}
+
+/* 엔딩 테마 */
+function applyEndingTheme(scene){
+
+    if(scene==="S10B"){
+        document.body.className = "bad";
+    }
+
+    else if(scene==="S10NV" || scene==="S10NR"){
+        document.body.className = "normal";
+    }
+
+    else if(scene==="S10H"){
+        document.body.className = "happy";
+    }
+
+    else{
+        document.body.className = "";
+    }
+}
+
+function go(scene){
+
+    currentScene = scene;
+
+    render();
+}
+
+function render(){
+
+    const text = document.getElementById("text");
+
+    const choices = document.getElementById("choices");
+
+    const title = document.getElementById("scene-title");
+
+    choices.innerHTML = "";
+
+    const scenes = {
+
+S1:{
+title:"S1. 접속 : 소의 탈",
+text:`비가 내리지도 않는데 창밖은 축축하게 젖어 있었다.
+
+형광등은 일정하지 않은 간격으로 깜빡였고,
+좁은 원룸 안에는 오래된 전자기기 소리만 희미하게 울렸다.
+
+주인공은 멍하니 천장을 바라보고 있었다.
+아무것도 하지 않았지만 하루는 이미 끝나가고 있었다.
+
+그때 문이 열렸다.
+
+문 앞에는 낡은 외투를 입은 노인이 서 있었다.
+노인은 말없이 소 머리 형태의 기묘한 장치를 내밀었다.
+
+붉은 LED가 심장처럼 맥동하고 있었다.
+
+“편해지고 싶지 않나?”
+
+“노력하지 않아도 되는 세상이다.”
+
+노인의 목소리는 이상할 정도로 부드러웠다.
+
+장치를 바라보는 순간,
+주인공은 설명할 수 없는 이끌림을 느낀다.`,
+
+choices:[
+
+{
+txt:"소의 탈을 착용한다",
+action:()=>{
+
+document.getElementById("stats").style.display="block";
+
+go("S2");
+}
+},
+
+{
+txt:"거부하고 외면한다",
+action:()=>{
+
+go("S1");
+}
+}
+
+]
+},
+
+S2:{
+title:"S2. 초기 노동",
+text:`눈을 뜬 순간,
+주인공은 자신의 몸이 무겁다는 사실을 깨닫는다.
+
+철제 피부.
+기계식 관절.
+목에는 거대한 쇠사슬.
+
+주인공은 어느새 거대한 데이터 공장 한가운데 서 있었다.
+
+수천 마리의 소 형태 아바타들이
+끝없이 컨베이어 벨트를 돌고 있었다.
+
+하늘에는 붉은 타이머가 떠 있었다.
+
+[에너지 생산을 시작하라.]
+
+차가운 기계 음성이 공간 전체를 울린다.
+
+주인공은 당황해 주변을 둘러보지만,
+로그아웃 버튼은 어디에도 보이지 않는다.
+
+멀리 중앙 통제 AI의 거대한 눈동자가 천천히 움직인다.
+
+‘편해질 수 있다’는 노인의 말은 거짓이었다.`,
+
+choices:[
+
+{
+txt:"억지로 계속 작업한다",
+action:()=>{
+
+state.energy -= 10;
+state.focus += 5;
+
+if(state.focus >= 50){
+state.energy += 10;
+}
+
+go("S4");
+}
+},
+
+{
+txt:"잠시 쉬어본다",
+action:()=>{
+
+state.energy += 5;
+state.focus -= 10;
+state.sync += 5;
+
+go("S3");
+}
+}
+
+]
+},
+
+S3:{
+title:"S3. 첫 번째 유혹",
+text:`눈앞에 따뜻한 빛의 팝업창이 떠오른다.
+
+[휴식을 권장합니다.]
+
+차가운 공장 안에서
+그 UI만은 이상할 정도로 포근했다.
+
+“지금 쉬어도 괜찮습니다.”
+
+“당신은 충분히 지쳤습니다.”
+
+달콤한 음성이 귓속을 파고든다.
+
+주변의 다른 노동 아바타들은
+이미 움직임을 멈춘 채 멍한 표정으로 서 있었다.
+
+그들의 눈동자에는 의지가 없었다.
+
+하지만 동시에…
+고통도 없어 보였다.
+
+유혹 알고리즘은 계속 속삭인다.
+
+“생각을 멈추면 편해집니다.”`,
+
+choices:[
+
+{
+txt:"유혹에 몸을 맡긴다",
+action:()=>{
+
+state.sync += 10;
+state.focus -= 15;
+state.energy += 5;
+
+go("S4");
+}
+},
+
+{
+txt:"억지로 정신을 붙잡는다",
+action:()=>{
+
+state.focus += 10;
+state.energy -= 5;
+
+if(state.focus >= 50){
+state.sync -= 5;
+}
+
+go("S4");
+}
+}
+
+]
+},
+
+S4:{
+title:"S4. 에너지 위기",
+text:`공장 전체에 붉은 경고등이 점등된다.
+
+[생산량 부족]
+
+[효율 저하 감지]
+
+벽면이 진동하고,
+천장에서 붉은 스캐너가 내려온다.
+
+중앙 통제 AI의 거대한 눈이
+주인공을 응시한다.
+
+“비효율 개체 확인.”
+
+“추가 노동을 수행하라.”
+
+바닥이 열리며
+더 위험한 작업 구역이 드러난다.
+
+용암처럼 끓는 데이터 더미와
+폭주하는 전력선.
+
+한 걸음만 잘못 디뎌도
+즉시 시스템에 흡수될 것 같은 공간이었다.`,
+
+choices:[
+
+{
+txt:"무리해서 작업을 강행한다",
+action:()=>{
+
+state.energy -= 15;
+state.focus -= 10;
+
+if(state.energy > 30){
+state.energy += 20;
+state.sync -= 10;
+}
+
+go("S6");
+}
+},
+
+{
+txt:"우선 회복을 시도한다",
+action:()=>{
+
+state.energy += 10;
+state.sync += 5;
+
+go("S5");
+}
+}
+
+]
+},
+
+S5:{
+title:"S5. 자동 작업 유혹",
+text:`희미한 안개 속에서
+자동화 시스템 UI가 활성화된다.
+
+[자동 노동 기능 활성화 가능]
+
+“직접 움직이지 않아도 됩니다.”
+
+“생각하지 않아도 됩니다.”
+
+눈앞의 버튼 하나만 누르면
+고통도 피로도 모두 줄어들 것처럼 보인다.
+
+주인공의 시야는 점점 흐려지고,
+몸은 점점 무거워진다.
+
+멀리서 누군가의 목소리가 들린다.
+
+“한 번 맡기면… 다시는 돌아오지 못해…”
+
+하지만 유혹 알고리즘은 더 달콤한 음성으로 덮어버린다.`,
+
+choices:[
+
+{
+txt:"자동 시스템에 맡긴다",
+action:()=>{
+
+state.focus -= 20;
+state.sync += 10;
+
+go("S6");
+}
+},
+
+{
+txt:"끝까지 수동으로 버틴다",
+action:()=>{
+
+state.focus += 10;
+state.energy -= 10;
+
+if(state.focus >= 60){
+state.sync -= 5;
+}
+
+go("S3");
+}
+}
+
+]
+},
+
+S6:{
+title:"S6. 감시자 등장",
+text:`갑자기 공간이 암전된다.
+
+그리고 어둠 속에서
+붉은 스캐너 수십 개가 켜진다.
+
+상위 감시 아바타들이 모습을 드러낸다.
+
+그들은 인간도,
+기계도 아닌 존재였다.
+
+거대한 소 형태의 검은 갑옷.
+붉게 빛나는 눈동자.
+
+“비효율 개체 발견.”
+
+“교정 절차를 시작한다.”
+
+감시자들은 천천히 주인공을 포위하기 시작한다.
+
+도망쳐야 한다.
+아니면 맞서야 한다.`,
+
+choices:[
+
+{
+txt:"틈을 노려 회피한다",
+action:()=>{
+
+state.energy -= 5;
+state.focus += 5;
+
+go("S7");
+}
+},
+
+{
+txt:"정면으로 대응한다",
+action:()=>{
+
+state.energy -= 15;
+state.focus -= 5;
+
+if(state.energy > 30){
+state.energy += 10;
+}
+
+go("S7");
+}
+}
+
+]
+},
+
+S7:{
+title:"S7. 과부하",
+text:`경고음이 멈추지 않는다.
+
+[과부하 위험]
+
+[동기화 상승 중]
+
+주인공의 몸은 점점 인간의 형태를 잃어간다.
+
+손끝은 쇠로 변하고,
+숨소리는 기계음처럼 갈라진다.
+
+화면은 계속 깨지고,
+현실의 기억도 흐려지기 시작한다.
+
+어머니의 얼굴.
+좁은 원룸.
+형광등의 빛.
+
+모든 것이 멀어져 간다.
+
+“멈춰야 하나…”
+
+주인공은 마지막 선택 앞에 선다.`,
+
+choices:[
+
+{
+txt:"끝까지 앞으로 나아간다",
+action:()=>{
+
+state.energy -= 10;
+state.focus -= 15;
+
+if(state.focus >= 40){
+state.sync -= 5;
+}
+
+go("S8");
+}
+},
+
+{
+txt:"잠시 쉬며 숨을 고른다",
+action:()=>{
+
+state.energy += 5;
+state.focus -= 5;
+state.sync += 10;
+
+go("S5");
+}
+}
+
+]
+},
+
+S8:{
+title:"S8. 동기화 임계",
+text:`현실과 가상이 완전히 뒤섞이기 시작한다.
+
+주인공의 눈앞에는
+원룸의 천장과 거대한 데이터 공장이 동시에 보인다.
+
+귀에서는 중앙 통제 AI의 목소리와
+노인의 웃음소리가 함께 울린다.
+
+“이제 받아들여라.”
+
+“저항은 비효율적이다.”
+
+몸속 깊은 곳에서
+또 다른 자신이 속삭인다.
+
+‘포기하면 편해진다.’
+
+눈앞에는 두 개의 길이 나타난다.
+
+하나는 모든 사고를 멈추고 시스템에 동화되는 길.
+
+다른 하나는
+끝없는 고통 속에서도 스스로를 붙잡는 길.`,
+
+choices:[
+
+{
+txt:"시스템을 받아들인다",
+action:()=>{
+
+state.sync += 20;
+
+go("S10B");
+}
+},
+
+{
+txt:"끝까지 저항한다",
+action:()=>{
+
+state.sync -= 10;
+state.focus -= 20;
+
+go("S9");
+}
+}
+
+]
+},
+
+S9:{
+title:"S9. 최종 미션",
+text:`거대한 데이터 폭풍이 공장 전체를 뒤덮는다.
+
+중앙 통제 AI의 본체가 드러난다.
+
+수천 개의 눈동자.
+수백 개의 기계 팔.
+끝없이 연결된 노동 회로.
+
+“최종 생산 테스트를 시작한다.”
+
+카운트다운이 시작된다.
+
+남은 시간은 단 몇 초.
+
+주인공은 자신의 마지막 의지를 끌어모은다.
+
+지금 여기서 무너지면
+영원히 이 세계에 갇히게 된다.
+
+하지만 버틴다고 해서
+정말 현실로 돌아갈 수 있을까?
+
+심장은 미친 듯이 뛰고,
+손은 떨리고,
+시야는 붉게 물든다.
+
+마지막 선택의 순간이 다가온다.`,
+
+choices:[
+
+{
+txt:"끝까지 집중을 유지한다",
+action:()=>{
+
+state.energy -= 20;
+
+if(state.sync >= 90){
+
+go("S10B");
+}
+
+else if(state.sync >= 60){
+
+go("S10NV");
+}
+
+else if(state.sync >= 30){
+
+go("S10NR");
+}
+
+else{
+
+go("S10H");
+}
+}
+},
+
+{
+txt:"모든 것을 포기한다",
+action:()=>{
+
+state.sync += 20;
+
+go("S10B");
+}
+}
+
+]
+},
+
+S10B:{
+title:"🔴 배드 엔딩",
+text:`주인공의 의식이 천천히 침식된다.
+
+마지막 인간의 기억이 사라진다.
+
+거울 속에는 더 이상 인간이 없다.
+
+거대한 철제 소 아바타만이
+붉은 눈동자를 빛내고 있다.
+
+[동기화 완료]
+
+[효율적인 노동 개체 등록]
+
+멀리서 노인의 웃음소리가 들린다.
+
+그리고 새로운 사용자를 위한
+또 하나의 소의 탈이 제작되기 시작한다.`,
+end:true
+},
+
+S10NV:{
+title:"🟡 노멀 엔딩 : 가상 잔류",
+text:`주인공은 끝내 시스템에서 완전히 벗어나지 못했다.
+
+자아는 남아 있다.
+
+하지만 몸은 여전히 이 공장 안에 묶여 있다.
+
+끝없이 이어지는 컨베이어 벨트.
+
+반복되는 노동.
+
+반복되는 하루.
+
+주인공은 천천히 고개를 든다.
+
+그리고 다음 노동 명령을 기다린다.
+
+[효율적인 개체로 유지됩니다.]`,
+end:true
+},
+
+S10NR:{
+title:"🟡 노멀 엔딩 : 현실 복귀",
+text:`눈을 뜨자 다시 원룸이었다.
+
+깜빡이는 형광등.
+젖은 창문.
+익숙한 냄새.
+
+분명 현실로 돌아왔다.
+
+하지만 이상하게도 아무 감정이 들지 않는다.
+
+몸은 자유지만,
+마음은 여전히 그 공장 안에 남아 있는 것 같다.
+
+책상 위에는 소 머리 탈이 놓여 있다.
+
+그리고 아주 희미하게,
+어딘가에서 기계음이 들리는 듯했다.`,
+end:true
+},
+
+S10H:{
+title:"🟢 해피 엔딩",
+text:`주인공은 마지막 힘으로 소의 탈을 벗어 던진다.
+
+붉은 경고창들이 연쇄적으로 깨져나간다.
+
+[동기화 해제]
+
+[시스템 오류]
+
+거대한 데이터 공장이 붕괴하기 시작한다.
+
+눈부신 빛과 함께
+주인공은 현실로 떨어진다.
+
+눈을 뜬 곳은 익숙한 원룸.
+
+하지만 이번에는 다르다.
+
+창문 밖으로 아침 햇살이 들어오고 있었다.
+
+주인공은 천천히 자리에서 일어난다.
+
+그리고 처음으로
+스스로의 의지로 문을 연다.
+
+“이제… 내가 선택한다.”`,
+end:true
+}
+
+    };
+
+    title.innerText = scenes[currentScene].title;
+
+    typeText(text, scenes[currentScene].text);
+
+    setImage();
+
+    applyEndingTheme(currentScene);
+
+    if(scenes[currentScene].end){
+
+        let btn = document.createElement("button");
+
+        btn.className = "restart";
+
+        btn.innerText = "다시하기";
+
+        btn.onclick = initGame;
+
+        choices.appendChild(btn);
+    }
+
+    else{
+
+        scenes[currentScene].choices.forEach((c,i)=>{
+
+            let btn = document.createElement("button");
+
+            btn.className = "choice " + (i===0 ? "primary" : "secondary");
+
+            btn.innerText = c.txt;
+
+            btn.onclick = c.action;
+
+            choices.appendChild(btn);
+        });
+    }
+
+    updateUI();
+}
+
+initGame();
+
+</script>
+
+</body>
+</html>

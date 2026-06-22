@@ -35,8 +35,8 @@ header{
     font-weight:bold;
     letter-spacing:2px;
     text-shadow:0 0 10px rgba(36,249,132,0.5);
+    cursor:pointer;
 }
-
 /* 변수 UI */
 .stats{
     display:none;
@@ -308,7 +308,7 @@ body.happy{
 
 <header style="display:none;">
 
-<div class="logo">🐄 게으름뱅이 소</div>
+<div class="logo" onclick="goTitle()">🐄 게으름뱅이 소</div>
 
 <div class="stats" id="stats">
     <span id="energy"></span>
@@ -357,6 +357,17 @@ function startGame(){
 
     initGame();
 }
+
+function goTitle(){
+
+    document.querySelector("header").style.display = "none";
+    document.querySelector("main").style.display = "none";
+
+    document.getElementById("title-screen").style.display = "flex";
+
+    clearInterval(typingInterval);
+}
+
 /* 초기화 */
 function initGame(){
 
@@ -452,13 +463,12 @@ function setImage(){
 
     let img = document.getElementById("scene-img");
 
-    img.src = `S${currentScene.replace(/\D/g,'')}_img.png`;
+    img.src = `images/${currentScene}_img.png`;
 
     img.onerror = function(){
-        img.src = "default_scene.png";
+        img.src = "images/default_scene.png";
     }
 }
-
 /* 엔딩 테마 */
 function applyEndingTheme(scene){
 

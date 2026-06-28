@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>게으름뱅이소_v9.1</title>
+<title>게으름뱅이소_v9.6</title>
 
 <style>
 
@@ -47,7 +47,31 @@ header{
     border-radius:8px;
     box-shadow:0 0 12px rgba(36,249,132,0.35);
 }
+/* 프로필 이미지 박스 */
+.header-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
 
+#profile-box{
+    width:80px;
+    height:80px;
+    border:1px solid #24F984;
+    border-radius:8px;
+    overflow:hidden;
+    background:#04100a;
+    box-shadow:0 0 12px rgba(36,249,132,0.35);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+#profile-box img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
 /* 메인 */
 main{
     display:flex;
@@ -310,14 +334,22 @@ body.happy{
 
 <div class="logo" onclick="goTitle()">🐄 게으름뱅이 소</div>
 
-<div class="stats" id="stats">
-    <span id="energy"></span>
-    <span id="sync"></span>
-    <span id="focus"></span>
+<div class="header-right">
+
+    <!-- 프로필 이미지 -->
+    <div id="profile-box" style="display:none;">
+        <img id="profile-img" src="images/profile_safe.png" alt="프로필">
+    </div>
+
+    <div class="stats" id="stats">
+        <span id="energy"></span>
+        <span id="sync"></span>
+        <span id="focus"></span>
+    </div>
+
 </div>
 
 </header>
-
 <main style="display:none;">
 
 <!-- 이미지 -->
@@ -382,6 +414,7 @@ function initGame(){
     document.body.className = "";
 
     document.getElementById("stats").style.display="none";
+    document.getElementById("profile-box").style.display="none";
 
     render();
 }
@@ -426,6 +459,33 @@ function updateUI(){
 
     document.getElementById("focus").innerHTML =
         `&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:${getColor('focus',state.focus)}">Focus: ${state.focus}</span>`;
+
+const profileImg = document.getElementById("profile-img");
+const profileBox = document.getElementById("profile-box");
+
+if(state.sync <= 20){
+
+    profileImg.src = "images/profile_safe.png";
+
+    profileBox.style.border = "1px solid lime";
+    profileBox.style.boxShadow = "0 0 12px rgba(50,255,50,0.35)";
+}
+
+else if(state.sync >= 60){
+
+    profileImg.src = "images/profile_danger.png";
+
+    profileBox.style.border = "1px solid #ff5a5a";
+    profileBox.style.boxShadow = "0 0 12px rgba(255,90,90,0.35)";
+}
+
+else{
+
+    profileImg.src = "images/profile_normal.png";
+
+    profileBox.style.border = "1px solid white";
+    profileBox.style.boxShadow = "0 0 12px rgba(255,255,255,0.35)";
+}
 }
 
 /* 타이핑 효과 + 자동 스크롤 */
@@ -585,9 +645,9 @@ txt:"소의 탈을 착용한다",
 action:()=>{
 
 document.getElementById("stats").style.display="block";
+document.getElementById("profile-box").style.display="flex";
 
-go("S2");
-}
+go("S2");}
 },
 
 {
@@ -1547,6 +1607,22 @@ end:true
     }
 
     updateUI();
+
+    // 엔딩일 때 프로필 이미지 변경
+    if(scenes[currentScene].end){
+
+        const profileImg = document.getElementById("profile-img");
+
+        if(currentScene === "S10B"){
+            profileImg.src = "images/profile_danger.png";
+        }
+        else if(currentScene === "S10H"){
+            profileImg.src = "images/profile_safe.png";
+        }
+        else{
+            profileImg.src = "images/profile_normal.png";
+        }
+    }
 }
 
 </script>
